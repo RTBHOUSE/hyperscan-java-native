@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <groupId>com.gliwka.hyperscan</groupId>
     <artifactId>native</artifactId>
-    <version>5.4.11-2.0.0-RTBHOUSE</version>
+    <version>5.4.11-2.0.2-RTBHOUSE</version>
     <name>hyperscan-java-native</name>
     <description>Native libraries for hyperscan java bindings</description>
     <url>https://github.com/gliwka/hyperscan-java-native</url>
@@ -30,64 +30,11 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <javacpp.version>1.5.9</javacpp.version>
+        <javacpp.version>1.5.11</javacpp.version>
+        <altDeploymentRepository>local::file:./target/staging-deploy</altDeploymentRepository>
     </properties>
-    <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-        </repository>
-    </distributionManagement>
-    <profiles>
-        <profile>
-            <id>staging</id>
-            <activation>
-                <property>
-                    <name>env.STAGING</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-deploy-plugin</artifactId>
-                        <version>3.1.1</version>
-                        <configuration>
-                            <skip>true</skip>
-                        </configuration>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.13</version>
-                        <extensions>true</extensions>
-                        <executions>
-                            <execution>
-                                <id>default-deploy</id>
-                                <phase>deploy</phase>
-                                <goals>
-                                    <goal>deploy</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                        <configuration>
-                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                            <serverId>ossrh</serverId>
-                            <stagingProfileId>487fa319ba2685</stagingProfileId>
-                            <skipStagingRepositoryClose>true</skipStagingRepositoryClose>
-                            <stagingRepositoryId>${env.STAGING_REPO}</stagingRepositoryId>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
     <build>
+        <defaultGoal>deploy</defaultGoal>
         <extensions>
             <extension>
                 <groupId>kr.motd.maven</groupId>
@@ -97,16 +44,21 @@
         </extensions>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>versions-maven-plugin</artifactId>
+                <version>2.18.0</version>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.2.2</version>
+                <version>3.5.3</version>
                 <configuration>
                     <argLine>-Djava.library.path=${project.build.directory}/native/com/gliwka/hyperscan/jni/${env.DETECTED_PLATFORM}</argLine>
                 </configuration>
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.14.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -132,7 +84,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>add-source</id>
@@ -186,28 +138,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-patch-plugin</artifactId>
-                <version>1.2</version>
-                <configuration>
-                    <patches>
-                        <patch>allocator.patch</patch>
-                    </patches>
-                    <targetDirectory>${project.build.directory}/generated-sources</targetDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>patch</id>
-                        <phase>process-sources</phase>
-                        <goals>
-                            <goal>apply</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.2</version>
                 <executions>
                     <execution>
                         <id>native-jar</id>
@@ -231,7 +163,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -244,7 +176,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.11.2</version>
                 <configuration>
                     <show>public</show>
                     <nohelp>true</nohelp>
@@ -258,18 +190,6 @@
                         <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.simplify4u.plugins</groupId>
-                <artifactId>sign-maven-plugin</artifactId>
-                <version>1.0.1</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>sign</goal>
                         </goals>
                     </execution>
                 </executions>
@@ -290,13 +210,13 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
-            <version>5.10.1</version>
+            <version>5.12.1</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>3.24.2</version>
+            <version>3.27.3</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
